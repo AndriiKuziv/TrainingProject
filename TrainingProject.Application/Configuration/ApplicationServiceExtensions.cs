@@ -15,8 +15,9 @@ public static class ApplicationServiceExtensions
         {
             config.AddMaps(typeof(ApplicationServiceExtensions).Assembly);
         });
-        services.AddValidatorsFromAssemblyContaining(typeof(ApplicationServiceExtensions));
+        services.AddValidatorsFromAssembly(typeof(ApplicationServiceExtensions).Assembly, includeInternalTypes: true);
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IValidationService, ValidationService>();
 
         return services;
     }

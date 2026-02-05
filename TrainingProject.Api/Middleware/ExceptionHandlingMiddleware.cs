@@ -1,4 +1,5 @@
 ﻿using Couchbase.Core.Exceptions.KeyValue;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +28,7 @@ namespace TrainingProject.Api.Middleware
         private static string GetProblemDetailsTitle(Exception exception) =>
             exception switch
             {
+                ValidationException => "Validation Failed",
                 DocumentNotFoundException => "Not Found",
                 ArgumentException => "Bad Request",
                 _ => "Internal Server Error"
@@ -35,6 +37,7 @@ namespace TrainingProject.Api.Middleware
         private static int GetStatusCode(Exception exception) =>
             exception switch
             {
+                ValidationException => StatusCodes.Status400BadRequest,
                 DocumentNotFoundException => StatusCodes.Status404NotFound,
                 ArgumentException => StatusCodes.Status400BadRequest,
                 _ => StatusCodes.Status500InternalServerError

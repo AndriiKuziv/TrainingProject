@@ -8,11 +8,16 @@ namespace TrainingProject.Application.Services.Implementations;
 
 public class UserService : IUserService
 {
+    private readonly IValidationService _validationService;
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
 
-    public UserService(IUserRepository userRepository, IMapper mapper)
+    public UserService(
+        IValidationService validationService,
+        IUserRepository userRepository,
+        IMapper mapper)
     {
+        _validationService = validationService;
         _userRepository = userRepository;
         _mapper = mapper;
     }
@@ -33,6 +38,8 @@ public class UserService : IUserService
 
     public async Task<string> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
+        await _validationService.ValidateAsync(request, cancellationToken);
+
         var user = _mapper.Map<User>(request);
         var userId = await _userRepository.CreateAsync(user, cancellationToken);
 
@@ -41,6 +48,8 @@ public class UserService : IUserService
 
     public async Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
+        await _validationService.ValidateAsync(request, cancellationToken);
+
         var existingUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
 
         var updatedUser = _mapper.Map<User>(request);
