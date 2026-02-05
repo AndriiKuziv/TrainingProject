@@ -1,0 +1,43 @@
+﻿using Couchbase.Core.Exceptions.KeyValue;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+
+namespace TrainingProject.Api.Middleware
+{
+    public class ExceptionHandlingMiddleware : IExceptionHandler
+    {
+        public async ValueTask<bool> TryHandleAsync(
+            HttpContext httpContext,
+            Exception exception,
+            CancellationToken cancellationToken)
+        {
+            httpContext.Response.StatusCode = GetStatusCode(exception);
+
+            await httpContext.Response.WriteAsJsonAsync(
+                new ProblemDetails
+                {
+                    Status = GetStatusCode(exception),
+                    Title = GetProblemDetailsTitle(exception)
+                },
+                cancellationToken: cancellationToken);
+
+            return true;
+        }
+
+        private static string GetProblemDetailsTitle(Exception exception) =>
+            exception switch
+            {
+                DocumentNotFoundException => "Not Found",
+                ArgumentException => "Bad Request",
+                _ => "Internal Server Error"
+            };
+
+        private static int GetStatusCode(Exception exception) =>
+            exception switch
+            {
+                DocumentNotFoundException => StatusCodes.Status404NotFound,
+                ArgumentException => StatusCodes.Status400BadRequest,
+                _ => StatusCodes.Status500InternalServerError
+            };
+    }
+}
