@@ -23,10 +23,10 @@ namespace TrainingProject
             builder.Services.AddExceptionHandler<ExceptionHandlingMiddleware>();
             builder.Services.AddProblemDetails();
 
-            builder.Services.AddOpenApiDocument(configure =>
+            builder.Services.AddOpenApiDocument(settings =>
             {
-                configure.Title = "TrainingProject API";
-                configure.Version = "v1";
+                settings.Title = "TrainingProject API";
+                settings.Version = "v1";
             });
 
             var app = builder.Build();
@@ -38,10 +38,7 @@ namespace TrainingProject
             if (app.Environment.IsDevelopment())
             {
                 app.UseOpenApi();
-                app.UseSwaggerUi(c =>
-                {
-                    c.SwaggerRoutes.Add(new SwaggerUiRoute("v1", "/swagger/v1/swagger.json"));
-                });
+                app.UseSwaggerUi();
             }
 
             app.UseExceptionHandler();
