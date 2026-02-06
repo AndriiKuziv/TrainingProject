@@ -1,7 +1,11 @@
 <Solution>
-  <Project Path="TrainingProject.Api/TrainingProject.Api.csproj" />
-  <Project Path="TrainingProject.AppHost/TrainingProject.AppHost.csproj" />
-  <Project Path="TrainingProject.Application/TrainingProject.Application.csproj" />
-  <Project Path="TrainingProject.Domain/TrainingProject.Domain.csproj" />
-  <Project Path="TrainingProject.Infrastructure/TrainingProject.Infrastructure.csproj" />
+  <Folder Name="/orchestration/">
+    <Project Path="orchestration/TrainingProject.AppHost/TrainingProject.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TrainingProject.Api/TrainingProject.Api.csproj" />
+    <Project Path="src/TrainingProject.Application/TrainingProject.Application.csproj" />
+    <Project Path="src/TrainingProject.Domain/TrainingProject.Domain.csproj" />
+    <Project Path="src/TrainingProject.Infrastructure/TrainingProject.Infrastructure.csproj" />
+  </Folder>
 </Solution>
