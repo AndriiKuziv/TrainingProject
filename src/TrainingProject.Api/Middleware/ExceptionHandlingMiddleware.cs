@@ -18,7 +18,8 @@ namespace TrainingProject.Api.Middleware
                 new ProblemDetails
                 {
                     Status = GetStatusCode(exception),
-                    Title = GetProblemDetailsTitle(exception)
+                    Title = GetProblemDetailsTitle(exception),
+                    Detail = GetProblemDetailsDetail(exception)
                 },
                 cancellationToken: cancellationToken);
 
@@ -41,6 +42,14 @@ namespace TrainingProject.Api.Middleware
                 DocumentNotFoundException => StatusCodes.Status404NotFound,
                 ArgumentException => StatusCodes.Status400BadRequest,
                 _ => StatusCodes.Status500InternalServerError
+            };
+
+        private static string? GetProblemDetailsDetail(Exception exception) =>
+            exception switch
+            {
+                ValidationException validationException =>
+                    string.Join("; ", validationException.Errors.Select(e => e.ErrorMessage)),
+                _ => null
             };
     }
 }

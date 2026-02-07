@@ -14,7 +14,6 @@ public class UserRepository : IUserRepository
 
     public UserRepository(
         TrainingProjectDbContext dbContext,
-        IBucketProvider bucketProvider,
         IOptions<CouchbaseSettings> options)
     {
         var settings = options.Value;
