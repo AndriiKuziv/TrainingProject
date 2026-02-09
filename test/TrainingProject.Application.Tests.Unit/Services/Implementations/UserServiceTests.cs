@@ -20,16 +20,11 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
         _mapperFixture = mapperFixture;
     }
 
-    [Fact]
-    public async Task GetAllUsersAsync_ReturnsMappedDtos()
+    [Theory]
+    [MemberData(nameof(GetAllUsersAsyncData))]
+    public async Task GetAllUsersAsync_ReturnsMappedDtos(IEnumerable<User> users)
     {
         // Arrange
-        var users = new List<User>
-        {
-            new() { Id = "1", Name = "User1" },
-            new() { Id = "2", Name = "User2" }
-        };
-
         _userRepositoryMock
             .Setup(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(users);
@@ -41,11 +36,10 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
         var userDtos = result.ToList();
 
         // Assert
-        Assert.Equal(users.Count, userDtos.Count);
-        for (var i = 0; i < users.Count; i++)
+        Assert.Equal(users.Count(), userDtos.Count);
+        foreach (var expected in users)
         {
-            Assert.Equal(users[i].Id, userDtos[i].Id);
-            Assert.Equal(users[i].Name, userDtos[i].Name);
+            Assert.Contains(result, actual => actual.Id == expected.Id && actual.Name == expected.Name);
         }
 
         _userRepositoryMock.Verify(repo => repo.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -173,4 +167,30 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
         _validationServiceMock.Object,
         _userRepositoryMock.Object,
         _mapperFixture.Mapper);
+
+    public static IEnumerable<object[]> GetAllUsersAsyncData()
+    {
+        yield return new object[]
+        {
+            new List<User>()
+        };
+
+        yield return new object[]
+        {
+            new List<User>
+            {
+                new() { Id = "id-1", Name = "User1" }
+            }
+        };
+
+        yield return new object[]
+        {
+            new List<User>
+            {
+                new() { Id = "id-1", Name = "User1" },
+                new() { Id = "id-2", Name = "User2" },
+                new() { Id = "id-3", Name = "User3" }
+            }
+        };
+    }
 }

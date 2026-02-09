@@ -1,5 +1,4 @@
-﻿using Couchbase.Extensions.DependencyInjection;
-using Couchbase.KeyValue;
+﻿using Couchbase.KeyValue;
 using Couchbase.KeyValue.RangeScan;
 using Microsoft.Extensions.Options;
 using TrainingProject.Domain.Models;
