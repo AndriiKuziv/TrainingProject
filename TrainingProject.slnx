@@ -9,6 +9,7 @@
     <Project Path="src/TrainingProject.Infrastructure/TrainingProject.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/TrainingProject.Api.Tests.Integration/TrainingProject.Api.Tests.Integration.csproj" />
     <Project Path="test/TrainingProject.Application.Tests.Unit/TrainingProject.Application.Tests.Unit.csproj" Id="1d42a895-8cd2-4adc-859c-a1b3d848a256" />
     <Project Path="test/TrainingProject.Infrastructure.Tests.Unit/TrainingProject.Infrastructure.Tests.Unit.csproj" />
   </Folder>

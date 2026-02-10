@@ -1,10 +1,9 @@
 using Couchbase.Extensions.DependencyInjection;
-using NSwag.AspNetCore;
 using TrainingProject.Api.Middleware;
 using TrainingProject.Application.Configuration;
 using TrainingProject.Infrastructure.Configuration;
 
-namespace TrainingProject
+namespace TrainingProject.Api
 {
     public class Program
     {

@@ -1,5 +1,4 @@
-﻿using Couchbase.Core.Exceptions.KeyValue;
-using Moq;
+﻿using Moq;
 using TrainingProject.Application.Requests;
 using TrainingProject.Application.Services;
 using TrainingProject.Application.Services.Implementations;
