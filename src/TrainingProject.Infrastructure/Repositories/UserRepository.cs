@@ -43,29 +43,32 @@ public class UserRepository : IUserRepository
         return doc.ContentAs<User>()!;
     }
 
-    public async Task<string> CreateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
     {
         var userId = Guid.NewGuid().ToString();
         user.Id = userId;
 
         await _collection.InsertAsync(userId, user);
 
-        return userId;
+        return user;
     }
 
-    public async Task<bool> UpdateAsync(string userId, User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(string userId, User user, CancellationToken cancellationToken = default)
     {
         user.Id = userId;
 
         await _collection.ReplaceAsync(userId, user);
 
-        return true;
+        return user;
     }
 
-    public async Task<bool> DeleteAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<User> DeleteAsync(string userId, CancellationToken cancellationToken = default)
     {
+        var doc = await _collection.GetAsync(userId);
+        var user = doc.ContentAs<User>()!;
+
         await _collection.RemoveAsync(userId);
 
-        return true;
+        return user;
     }
 }

@@ -6,7 +6,7 @@ namespace TrainingProject.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UsersController : Controller
+public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
 
@@ -36,9 +36,9 @@ public class UsersController : Controller
         [FromBody] CreateUserRequest request,
         CancellationToken cancellationToken)
     {
-        var userId = await _userService.CreateUserAsync(request, cancellationToken);
+        var createdUser = await _userService.CreateUserAsync(request, cancellationToken);
 
-        return CreatedAtAction(nameof(GetUserById), new { userId }, new { id = userId });
+        return CreatedAtAction(nameof(GetUserById), new { userId = createdUser.Id }, createdUser);
     }
 
     [HttpPut("{userId}")]
@@ -47,9 +47,9 @@ public class UsersController : Controller
         [FromBody] UpdateUserRequest request,
         CancellationToken cancellationToken)
     {
-        await _userService.UpdateUserAsync(userId, request, cancellationToken);
+        var updatedUser = await _userService.UpdateUserAsync(userId, request, cancellationToken);
 
-        return Ok();
+        return Ok(updatedUser);
     }
 
     [HttpDelete("{userId}")]

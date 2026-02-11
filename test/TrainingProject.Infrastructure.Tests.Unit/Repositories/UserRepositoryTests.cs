@@ -7,7 +7,6 @@ using Moq;
 using TrainingProject.Domain.Models;
 using TrainingProject.Infrastructure.Configuration;
 using TrainingProject.Infrastructure.Repositories;
-using static Couchbase.Core.Diagnostics.Tracing.OuterRequestSpans.ManagerSpan;
 
 namespace TrainingProject.Infrastructure.Tests.Unit.Repositories;
 
@@ -110,14 +109,14 @@ public class UserRepositoryTests
             .ReturnsAsync(Mock.Of<IMutationResult>());
 
         // Act
-        var createdId = await _userRepository.CreateAsync(user);
+        var createdUser = await _userRepository.CreateAsync(user);
 
         // Assert
-        Assert.False(string.IsNullOrWhiteSpace(createdId));
-        Assert.Equal(createdId, user.Id);
+        Assert.NotNull(createdUser);
+        Assert.False(string.IsNullOrEmpty(createdUser.Id));
 
         _collectionMock.Verify(
-            collection => collection.InsertAsync(createdId, user, It.IsAny<InsertOptions?>()),
+            collection => collection.InsertAsync(createdUser.Id, user, It.IsAny<InsertOptions?>()),
             Times.Once);
     }
 
@@ -133,11 +132,11 @@ public class UserRepositoryTests
             .ReturnsAsync(Mock.Of<IMutationResult>());
 
         // Act
-        var result = await _userRepository.UpdateAsync(userId, user);
+        var updatedUser = await _userRepository.UpdateAsync(userId, user);
 
         // Assert
-        Assert.True(result);
-        Assert.Equal(userId, user.Id);
+        Assert.NotNull(updatedUser);
+        Assert.Equal(userId, updatedUser.Id);
 
         _collectionMock.Verify(
             collection => collection.ReplaceAsync(
@@ -148,22 +147,31 @@ public class UserRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteAsync_ValidData_RemovesUserAndReturnsTrue()
+    public async Task DeleteAsync_ValidData_RemovesUserAndReturnsDeletedUser()
     {
         // Arrange
-        var userId = "id-1";
+        var user = new User { Id = "id-1", Name = "User1" };
+
+        var getResultMock = new Mock<IGetResult>();
+        getResultMock.Setup(result => result.ContentAs<User>()).Returns(user);
 
         _collectionMock
-            .Setup(collection => collection.RemoveAsync(userId, It.IsAny<RemoveOptions?>()))
+            .Setup(collection => collection.GetAsync(user.Id, It.IsAny<GetOptions?>()))
+            .ReturnsAsync(getResultMock.Object);
+
+        _collectionMock
+            .Setup(collection => collection.RemoveAsync(user.Id, It.IsAny<RemoveOptions?>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await _userRepository.DeleteAsync(userId);
+        var deletedUser = await _userRepository.DeleteAsync(user.Id);
 
         // Assert
-        Assert.True(result);
+        Assert.NotNull(deletedUser);
+        Assert.Equal(user.Id, deletedUser.Id);
+        Assert.Equal(user.Name, deletedUser.Name);
 
-        _collectionMock.Verify(collection => collection.RemoveAsync(userId, It.IsAny<RemoveOptions?>()), Times.Once);
+        _collectionMock.Verify(collection => collection.RemoveAsync(user.Id, It.IsAny<RemoveOptions?>()), Times.Once);
     }
 
     public static IEnumerable<object[]> GetAllAsyncData()

@@ -36,17 +36,17 @@ public class UserService : IUserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<string> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
+    public async Task<CreateUserDto> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
         await _validationService.ValidateAsync(request, cancellationToken);
 
         var user = _mapper.Map<User>(request);
-        var userId = await _userRepository.CreateAsync(user, cancellationToken);
+        var createUser = await _userRepository.CreateAsync(user, cancellationToken);
 
-        return userId;
+        return _mapper.Map<CreateUserDto>(createUser);
     }
 
-    public async Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request, CancellationToken cancellationToken = default)
+    public async Task<UpdateUserDto> UpdateUserAsync(string userId, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
         await _validationService.ValidateAsync(request, cancellationToken);
 
@@ -54,11 +54,15 @@ public class UserService : IUserService
 
         var updatedUser = _mapper.Map<User>(request);
 
-        return await _userRepository.UpdateAsync(userId, updatedUser, cancellationToken);
+        var resultUser = await _userRepository.UpdateAsync(userId, updatedUser, cancellationToken);
+
+        return _mapper.Map<UpdateUserDto>(resultUser);
     }
 
-    public async Task<bool> DeleteUserAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<DeleteUserDto> DeleteUserAsync(string userId, CancellationToken cancellationToken = default)
     {
-        return await _userRepository.DeleteAsync(userId, cancellationToken);
+        var deletedUser = await _userRepository.DeleteAsync(userId, cancellationToken);
+
+        return _mapper.Map<DeleteUserDto>(deletedUser);
     }
 }

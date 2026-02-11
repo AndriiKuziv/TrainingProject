@@ -71,7 +71,7 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
     [Theory]
     [InlineData("User1", "id-1")]
     [InlineData("User2", "id-2")]
-    public async Task CreateUserAsync_ValidData_ReturnsCreatedUserId(string name, string generatedId)
+    public async Task CreateUserAsync_ValidData_ReturnsCreateUserDto(string name, string generatedId)
     {
         // Arrange
         var request = new CreateUserRequest { Name = name };
@@ -83,15 +83,15 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
         _userRepositoryMock
             .Setup(repo =>
                 repo.CreateAsync(It.Is<User>(u => u.Name == name), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedId);
+            .ReturnsAsync(new User() { Id = generatedId, Name = name });
 
         var userService = CreateUserService();
 
         // Act
-        var result = await userService.CreateUserAsync(request);
+        var createdUser = await userService.CreateUserAsync(request);
 
         // Assert
-        Assert.Equal(generatedId, result);
+        Assert.Equal(generatedId, createdUser.Id);
 
         _validationServiceMock.Verify(validation => validation.ValidateAsync(request, It.IsAny<CancellationToken>()), Times.Once);
         _userRepositoryMock.Verify(
@@ -102,7 +102,7 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
     [Theory]
     [InlineData("id-1", "User1", "=UpdatedUser1")]
     [InlineData("id-2", "User2", "!UpdatedUser2")]
-    public async Task UpdateUserAsync_ValidData_ReturnsTrue(
+    public async Task UpdateUserAsync_ValidData_ReturnsUpdateUserDto(
         string userId,
         string existingName,
         string newName)
@@ -124,15 +124,15 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
                 userId,
                 It.Is<User>(u => u.Name == newName),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(new User() { Id = userId, Name = newName });
 
         var userService = CreateUserService();
 
         // Act
-        var result = await userService.UpdateUserAsync(userId, request);
+        var updatedUser = await userService.UpdateUserAsync(userId, request);
 
         // Assert
-        Assert.True(result);
+        Assert.NotNull(updatedUser);
 
         _validationServiceMock.Verify(validation => validation.ValidateAsync(request, It.IsAny<CancellationToken>()), Times.Once);
         _userRepositoryMock.Verify(repo => repo.GetByIdAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
@@ -142,22 +142,26 @@ public class UserServiceTests : IClassFixture<AutoMapperFixture>
     }
 
     [Theory]
-    [InlineData("id-1")]
-    [InlineData("id-2")]
-    public async Task DeleteUserAsync_ValidData_ReturnsTrue(string userId)
+    [InlineData("id-1", "User1")]
+    [InlineData("id-2", "User2")]
+    public async Task DeleteUserAsync_ValidData_ReturnsDeleteUserDto(string userId, string userName)
     {
         // Arrange
+        var user = new User() { Id = userId, Name = userName };
+
         _userRepositoryMock
             .Setup(repo => repo.DeleteAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(user);
 
         var userService = CreateUserService();
 
         // Act
-        var result = await userService.DeleteUserAsync(userId);
+        var deletedUser = await userService.DeleteUserAsync(userId);
 
         // Assert
-        Assert.True(result);
+        Assert.NotNull(deletedUser);
+        Assert.Equal(userId, deletedUser.Id);
+        Assert.Equal(userName, deletedUser.Name);
 
         _userRepositoryMock.Verify(repo => repo.DeleteAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
     }
