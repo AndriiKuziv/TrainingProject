@@ -1,28 +1,27 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
-using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TrainingProject.Application.Services.Implementations;
 
 public class ValidationService : IValidationService
 {
-    private readonly Dictionary<Type, object> _validators = [];
+    private readonly IServiceProvider _serviceProvider;
+
+    public ValidationService(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
 
     public async Task ValidateAsync<T>(T model, CancellationToken cancellationToken = default)
     {
-        ValidateNull(model);
+        var validator = _serviceProvider.GetService<IValidator<T>>();
 
-        var validatorType = GetValidatorType(model);
-
-        if (!_validators.TryGetValue(validatorType, out _))
+        if (validator is null)
         {
-            var validatorInstance = Activator.CreateInstance(validatorType)
-                ?? throw new KeyNotFoundException("Unable to find validator of the required type");
-
-            _validators[validatorType] = validatorInstance;
+            throw new InvalidOperationException($"Failed to find validator for the model type {typeof(T).Name}.");
         }
 
-        var validationResult = await ((IValidator)_validators[validatorType]).ValidateAsync(new ValidationContext<object>(model), cancellationToken);
+        var validationResult = await validator.ValidateAsync(model, cancellationToken);
 
         if (!validationResult.IsValid)
         {
@@ -30,21 +29,11 @@ public class ValidationService : IValidationService
         }
     }
 
-    public void ValidateNull<T>(T model)
+    public void ValidateNull<T>(T model, string errorMessage, params object[] args)
     {
         if (model is null)
         {
-            throw new ArgumentNullException(nameof(model), "Model cannot be null.");
+            throw new ValidationException(string.Format(errorMessage, args));
         }
-    }
-
-    private static Type GetValidatorType<T>(T model)
-    {
-        var modelType = model!.GetType();
-        var evt = typeof(AbstractValidator<>).MakeGenericType(modelType);
-
-        return Assembly.GetAssembly(typeof(ValidationService))!
-            .GetTypes()
-            .First(t => t.IsSubclassOf(evt));
     }
 }

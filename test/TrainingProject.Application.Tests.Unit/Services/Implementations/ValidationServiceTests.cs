@@ -1,4 +1,7 @@
 ﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
+using TrainingProject.Application.Configuration;
+using TrainingProject.Application.Constants;
 using TrainingProject.Application.Requests;
 using TrainingProject.Application.Services.Implementations;
 
@@ -6,7 +9,17 @@ namespace TrainingProject.Application.Tests.Unit.Services.Implementations;
 
 public class ValidationServiceTests
 {
-    private readonly ValidationService _validationService = new();
+    private readonly ValidationService _validationService;
+
+    public ValidationServiceTests()
+    {
+        var services = new ServiceCollection();
+
+        services.AddValidatorsFromAssembly(typeof(ApplicationServiceExtensions).Assembly, includeInternalTypes: true);
+
+        var serviceProvider = services.BuildServiceProvider();
+        _validationService = new ValidationService(serviceProvider);
+    }
 
     [Fact]
     public async Task ValidateAsync_ValidModel_PassesValidation()
@@ -27,35 +40,39 @@ public class ValidationServiceTests
         // Arrange
         var invalidRequest = new CreateUserRequest { Name = string.Empty };
 
-        // Act & Assert
-        await Assert.ThrowsAsync<ValidationException>(() => _validationService.ValidateAsync(invalidRequest));
+        // Act
+        var exception = await Record.ExceptionAsync(() => _validationService.ValidateAsync(invalidRequest));
+        
+        // Assert
+        Assert.NotNull(exception);
+        var validationException = Assert.IsType<ValidationException>(exception);
+        Assert.Contains(validationException!.Errors, errors => errors.ErrorMessage == ValidationMessages.NameRequired);
     }
 
     [Fact]
-    public async Task ValidateAsync_NullModel_ThrowsArgumentNullException()
+    public async Task ValidateNull_NullModel_ThrowsArgumentNullException()
     {
         // Arrange
+        var errorMessage = "Test error message";
 
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _validationService.ValidateAsync<CreateUserRequest>(null));
-    }
+        // Act
+        var exception = Record.Exception(() => _validationService.ValidateNull<object>(null, errorMessage));
 
-    [Fact]
-    public void ValidateNull_NullModel_ThrowsArgumentNullException()
-    {
-        // Arrange
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => _validationService.ValidateNull<object>(null));
+        // Assert
+        Assert.NotNull(exception);
+        var validationException = Assert.IsType<ValidationException>(exception);
+        Assert.Equal(errorMessage, validationException.Message);
     }
 
     [Fact]
     public void ValidateNull_NotNullModel_PassesValidation()
     {
         // Arrange
+        var validModel = new object();
+        var errorMessage = "Test error message";
 
         // Act
-        var exception = Record.Exception(() => _validationService.ValidateNull("NotNull"));
+        var exception = Record.Exception(() => _validationService.ValidateNull(validModel, errorMessage));
 
         // Assert
         Assert.Null(exception);

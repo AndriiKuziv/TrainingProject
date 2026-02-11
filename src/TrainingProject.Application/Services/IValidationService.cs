@@ -6,5 +6,5 @@ public interface IValidationService
 {
     Task ValidateAsync<T>(T model, CancellationToken cancellationToken = default);
 
-    void ValidateNull<T>(T model);
+    void ValidateNull<T>(T model, string errorMessage, params object[] args);
 }
