@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using TrainingProject.Application.Configuration;
-using TrainingProject.Application.Constants;
 using TrainingProject.Application.Requests;
 using TrainingProject.Application.Services.Implementations;
 
@@ -46,7 +45,7 @@ public class ValidationServiceTests
         // Assert
         Assert.NotNull(exception);
         var validationException = Assert.IsType<ValidationException>(exception);
-        Assert.Contains(validationException!.Errors, errors => errors.ErrorMessage == ValidationMessages.NameRequired);
+        Assert.Contains(validationException!.Errors, errors => errors.ErrorMessage == "Name is required.");
     }
 
     [Fact]

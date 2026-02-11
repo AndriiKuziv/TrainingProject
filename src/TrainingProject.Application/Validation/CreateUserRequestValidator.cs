@@ -9,6 +9,6 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
     public CreateUserRequestValidator()
     {
         RuleFor(x => x.Name)
-            .NotNull().NotEmpty().WithMessage(ValidationMessages.NameRequired);
+            .NotNull().NotEmpty().WithMessage("Name is required.");
     }
 }

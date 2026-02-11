@@ -59,6 +59,6 @@ public class UsersController : Controller
     {
         await _userService.DeleteUserAsync(userId, cancellationToken);
 
-        return Ok();
+        return NoContent();
     }
 }

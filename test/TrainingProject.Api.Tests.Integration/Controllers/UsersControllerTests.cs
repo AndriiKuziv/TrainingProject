@@ -35,8 +35,9 @@ public class UsersControllerTests : IClassFixture<ApiTestFixture>
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var payload = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-            Assert.Contains(payload!, dto => dto.Id == firstId && dto.Name == firstUser.Name);
-            Assert.Contains(payload!, dto => dto.Id == secondId && dto.Name == secondUser.Name);
+            Assert.NotNull(payload);
+            Assert.Contains(payload, dto => dto.Id == firstId && dto.Name == firstUser.Name);
+            Assert.Contains(payload, dto => dto.Id == secondId && dto.Name == secondUser.Name);
         }
         finally
         {
@@ -130,7 +131,9 @@ public class UsersControllerTests : IClassFixture<ApiTestFixture>
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         Assert.Equal("Validation Failed", problem?.Title);
         Assert.Equal((int)HttpStatusCode.BadRequest, problem?.Status);
+
         Assert.False(string.IsNullOrWhiteSpace(problem?.Detail));
+        Assert.Contains("Name is required", problem.Detail);
     }
 
     [Fact]
@@ -176,7 +179,9 @@ public class UsersControllerTests : IClassFixture<ApiTestFixture>
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         Assert.Equal("Validation Failed", problem?.Title);
         Assert.Equal((int)HttpStatusCode.BadRequest, problem?.Status);
+
         Assert.False(string.IsNullOrWhiteSpace(problem?.Detail));
+        Assert.Contains("Name is required", problem.Detail);
     }
 
     [Fact]
@@ -193,7 +198,7 @@ public class UsersControllerTests : IClassFixture<ApiTestFixture>
         var problem = await getResponse.Content.ReadFromJsonAsync<ProblemDetails>();
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
         Assert.NotNull(problem);
