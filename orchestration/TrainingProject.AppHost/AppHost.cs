@@ -3,8 +3,10 @@ using Couchbase.Aspire.Hosting;
 var builder = DistributedApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
+var couchbasePassword = builder.AddParameter("couchbase-password", config["Couchbase:Password"], secret: true);
+
 var couchbasedb = builder
-    .AddCouchbase("couchbase")
+    .AddCouchbase("couchbase", password: couchbasePassword)
     .WithManagementPort(8091);
 
 var bucket = couchbasedb.AddBucket("training-bucket")
