@@ -4,9 +4,10 @@ var builder = DistributedApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
 var couchbasePassword = builder.AddParameter("couchbase-password", config["Couchbase:Password"], secret: true);
+var couchbaseUserName = builder.AddParameter("couchbase-username", config["Couchbase:UserName"], secret: true);
 
 var couchbasedb = builder
-    .AddCouchbase("couchbase", password: couchbasePassword)
+    .AddCouchbase("couchbase", userName: couchbaseUserName, password: couchbasePassword)
     .WithManagementPort(8091);
 
 var bucket = couchbasedb.AddBucket("training-bucket")
@@ -36,7 +37,7 @@ var trainingApiProject = builder.AddProject<Projects.TrainingProject_Api>("train
     .WaitFor(couchbasedb);
 
 trainingApiProject
-    .WithEnvironment("Couchbase__UserName", couchbasedb.Resource.UserNameReference.ValueExpression)
+    .WithEnvironment("Couchbase__UserName", couchbasedb.Resource.UserNameReference)
     .WithEnvironment("Couchbase__Password", couchbasedb.Resource.PasswordParameter);
 
 builder.Build().Run();
